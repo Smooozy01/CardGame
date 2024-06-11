@@ -6,13 +6,10 @@ public class Main {
 
     public static void main(String[] args) {
 
-        // Create a deck of 52 cards
         ArrayList<Card> Deck = new ArrayList<>();
         CardDeck.CreateDeck(Deck);
 
 
-        // Create 2 players and give them 6 random cards from a deck
-        // that we previously created.
         ArrayList<Card> player1 = new ArrayList<>();
         CardDeck.SetRandomDeck6(player1, Deck);
 
@@ -20,12 +17,11 @@ public class Main {
         CardDeck.SetRandomDeck6(player2, Deck);
 
 
-        // Create a desk where the play is played.
         LinkedHashMap<Card, Card> desk = new LinkedHashMap<>();
 
 
         PlayGame(Deck, player1, player2, desk);
-
+        
 
     }
 
@@ -33,15 +29,72 @@ public class Main {
 
         Collections.shuffle(cards);
 
+        boolean Move1 = true;
 
         while (!player1.isEmpty() || !player2.isEmpty()) {
 
-            CardDeck.PlayFirstCard(player1, cards, desk);
-            CardDeck.Respond(player2, desk);
+            if (Move1) PlayerMove(player1, player2, cards, desk);
+            else PlayerMove(player2, player1, cards, desk);
+
+            Move1 = PlayerMove(player1, player2, cards, desk);
+
 
         }
 
 
     }
 
+
+    public static boolean PlayerMove(ArrayList<Card> player1,ArrayList<Card> player2, ArrayList<Card> Deck, LinkedHashMap<Card, Card> Desk) {
+
+
+        CardDeck.PlayFirstCard(player1, Deck, Desk);
+        boolean ContinueGame = CardDeck.Respond(player2, Desk);
+        CardDeck.Respond(player2, Desk);
+
+        if (!ContinueGame) return true;
+
+
+        int counter = 0;
+
+        while (ContinueGame || counter > 4) {
+
+            CardDeck.AddCardOnDesk(player1, Deck, Desk);
+            if (!CardDeck.AddCardOnDesk(player1, Deck, Desk)) {break;}
+            CardDeck.Respond(player2, Desk);
+
+            ContinueGame = CardDeck.Respond(player2, Desk);
+            counter++;
+        }
+
+        return !ContinueGame;
+
+    }
+
+
+
+
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
