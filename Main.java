@@ -7,14 +7,14 @@ public class Main {
     public static void main(String[] args) {
 
         ArrayList<Card> Deck = new ArrayList<>();
-        CardDeck.CreateDeck(Deck);
-
+        CardDeck.CreateDeck36(Deck);
+        
 
         ArrayList<Card> player1 = new ArrayList<>();
-        CardDeck.SetRandomDeck6(player1, Deck);
+        CardDeck.SetPlayerCards(player1, Deck);
 
         ArrayList<Card> player2 = new ArrayList<>();
-        CardDeck.SetRandomDeck6(player2, Deck);
+        CardDeck.SetPlayerCards(player2, Deck);
 
 
         LinkedHashMap<Card, Card> desk = new LinkedHashMap<>();
@@ -33,11 +33,8 @@ public class Main {
 
         while (!player1.isEmpty() || !player2.isEmpty()) {
 
-            if (Move1) PlayerMove(player1, player2, cards, desk);
-            else PlayerMove(player2, player1, cards, desk);
-
-            Move1 = PlayerMove(player1, player2, cards, desk);
-
+            if (Move1) Move1 = MoveLap(player1, player2, cards, desk);
+            else Move1 = MoveLap(player2, player1, cards, desk);
 
         }
 
@@ -45,35 +42,50 @@ public class Main {
     }
 
 
-    public static boolean PlayerMove(ArrayList<Card> player1,ArrayList<Card> player2, ArrayList<Card> Deck, LinkedHashMap<Card, Card> Desk) {
+    public static boolean MoveLap(ArrayList<Card> player1, ArrayList<Card> player2, ArrayList<Card> Deck, LinkedHashMap<Card, Card> Desk) {
 
 
         CardDeck.PlayFirstCard(player1, Deck, Desk);
-        boolean ContinueGame = CardDeck.Respond(player2, Desk);
-        CardDeck.Respond(player2, Desk);
-
-        if (!ContinueGame) return true;
-
-
-        int counter = 0;
-
-        while (ContinueGame || counter > 4) {
-
-            CardDeck.AddCardOnDesk(player1, Deck, Desk);
-            if (!CardDeck.AddCardOnDesk(player1, Deck, Desk)) {break;}
-            CardDeck.Respond(player2, Desk);
-
-            ContinueGame = CardDeck.Respond(player2, Desk);
-            counter++;
+        boolean ContinueGame = CardDeck.CheckDeckForResponse(player2, Desk.lastEntry().getKey()); // Can player2 respond?
+        
+        if (!CardDeck.Respond(player2, Desk)) { // If can't, he takes cards on desk, and it's player1's move again
+            return true;
         }
 
+        if (CardDeck.CheckForAddingCardOnDesk(player1, Desk)) {
+            
+            int counter = 0;
+
+            while (ContinueGame || counter > 4) {
+
+                
+                if (!CardDeck.AddCardOnDesk(player1, Deck, Desk)) { // Бито
+                    return false;
+                }
+
+                
+                ContinueGame = CardDeck.CheckDeckForResponse(player2, Desk.lastEntry().getKey());
+                if (!ContinueGame) {
+                    CardDeck.TakeGivenCard(player2, Desk);
+                    return true;
+                }
+            
+                
+                if (!CardDeck.Respond(player2, Desk)) return true;
+                else {
+                    counter++;
+                }
+                
+                
+            }
+            
+        }
+        
+        
         return !ContinueGame;
-
+        
     }
-
-
-
-
+    
 
 }
 

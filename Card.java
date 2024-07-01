@@ -1,8 +1,4 @@
-import java.util.LinkedHashMap;
-import java.util.Random;
-import java.util.ArrayList;
-import java.util.Scanner;
-import java.util.HashSet;
+import java.util.*;
 
 
 enum Suit {
@@ -25,7 +21,20 @@ public class Card {
     // Getters
     public String getCard(){
         String isTrump = trump ? " + Trump" : "";
-        return suit + " " + value + isTrump;
+        
+        if (suit == Suit.Piki){
+            return "♠️" + " " + value + isTrump;
+        }
+        else if (suit == Suit.Bubny){
+            return "♦️" + " " + value + isTrump;
+        }
+        else if (suit == Suit.Chervi){
+            return "♥️" + " " + value + isTrump;
+        }
+        else{
+            return "♣️" + " " + value + isTrump;
+        }
+        
     }
 
 
@@ -56,7 +65,7 @@ class CardDeck {
 
 
     // A method to create a deck of 52 cards.
-    public static void CreateDeck(ArrayList<Card> cards) {
+    public static void CreateDeck52(ArrayList<Card> cards) {
 
         String[] validValues = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"};
 
@@ -76,8 +85,29 @@ class CardDeck {
     }
 
 
+    // A method to create a deck of 36 cards.
+    public static void CreateDeck36(ArrayList<Card> cards) {
+
+        String[] validValues = {"6", "7", "8", "9", "10", "J", "Q", "K", "A"};
+
+        for (Suit suit : Suit.values()) {
+            for (String value : validValues) {
+                cards.add(new Card(value, suit));
+            }
+        }
+
+        int rnd = new Random().nextInt(4);
+        for (int i = rnd * 9; i < rnd * 9 + 9; i++){
+
+            cards.get(i).trump = true;
+
+        }
+
+    }
+
+
     // A method to put 6 random cards into player's deck.
-    public static void SetRandomDeck6(ArrayList<Card> playerCards, ArrayList<Card> deck) {
+    public static void SetPlayerCards(ArrayList<Card> playerCards, ArrayList<Card> deck) {
 
         for (int i = 0; i < 6; i++) {
 
@@ -164,6 +194,28 @@ class CardDeck {
         return false;
 
     }
+    //Overloaded Method
+    public static boolean CheckForAddingCardOnDesk(ArrayList<Card> PlayerCards, LinkedHashMap<Card, Card> Desk) {
+
+        HashSet<String> ValuesOnTable = new HashSet<>();
+
+        for (Card card : Desk.keySet()){
+
+            ValuesOnTable.add(card.getValueString());
+            if (Desk.get(card) != null){ ValuesOnTable.add(Desk.get(card).getValueString()); }
+
+        }
+
+        for (Card card : PlayerCards){
+
+            if (ValuesOnTable.contains(card.getValueString())){ return true; }
+
+        }
+
+
+        return false;
+
+    }
 
 
     // Drawing a card from a deck of cards.
@@ -180,9 +232,15 @@ class CardDeck {
 
     // Method to make a responder take a card that he's been given to
     public static void TakeGivenCard(ArrayList<Card> PlayerCards, LinkedHashMap<Card, Card> desk) {
-
-        PlayerCards.addAll(desk.values());
+        
         PlayerCards.addAll(desk.keySet());
+        
+        Set<Card> Values = desk.keySet();
+        for (Card card : Values){
+            if (desk.get(card) != null){
+                PlayerCards.add(desk.get(card));
+            }
+        }
         desk.clear();
 
     }
@@ -218,8 +276,6 @@ class CardDeck {
     // A method to respond on a given card.
     public static boolean Respond(ArrayList<Card> PlayerCards, LinkedHashMap<Card, Card> Desk) {
 
-        if (Desk.lastEntry().getValue() != null){ return false; }
-
         if (!CheckDeckForResponse(PlayerCards, Desk.lastEntry().getKey())){
 
             System.out.println("No Response!!!");
@@ -227,10 +283,12 @@ class CardDeck {
             return false;
 
         }
-
+        
+        
+        if (Desk.lastEntry().getValue() != null){ return false; }
 
         Scanner scanner = new Scanner(System.in);
-
+        
         for (int i = 0; i < PlayerCards.size(); i++) System.out.println((i + 1) + ": " + PlayerCards.get(i).getCard());
 
         System.out.println("Respond to a card " + Desk.lastEntry().getKey().getCard() + ": ");
@@ -244,7 +302,7 @@ class CardDeck {
             return false;
         }
 
-        while (!CheckCardForResponse(PlayerCards.get(cardNum - 1), Desk.lastEntry().getKey())){
+        while (!CheckCardForResponse(PlayerCards.get(cardNum - 1), Desk.lastEntry().getKey()) || cardNum == 0){
 
             if (cardNum == 0){
                 TakeGivenCard(PlayerCards, Desk);
@@ -258,6 +316,7 @@ class CardDeck {
         }
 
         Desk.put(Desk.lastEntry().getKey(), PlayerCards.get(cardNum - 1));
+        PlayerCards.remove(cardNum - 1);
 
 
         return true;
@@ -272,7 +331,6 @@ class CardDeck {
 
         if (CheckForAddingCardOnDesk(PlayerCards, Desk, ValuesOnTable)){
 
-
             Scanner scanner = new Scanner(System.in);
 
             for (int i = 0; i < PlayerCards.size(); i++) System.out.println((i + 1) + ": " + PlayerCards.get(i).getCard());
@@ -280,14 +338,20 @@ class CardDeck {
             for (String value : ValuesOnTable) System.out.print(value + " ");
 
             int CardNum = scanner.nextInt();
-            if (CardNum == 0){ return false; }
+            if (CardNum == 0) {
+                Desk.clear();
+                return false;
+            }
 
 
             while (CardNum < 0 || CardNum > PlayerCards.size()){
 
                 CardNum = scanner.nextInt();
 
-                if (CardNum == 0){ return false; }
+                if (CardNum == 0) {
+                    Desk.clear();
+                    return false;
+                }
 
             }
 
@@ -300,7 +364,7 @@ class CardDeck {
         }
 
 
-        else{ System.out.println("No card to add"); }
+        else System.out.println("No card to add"); 
 
         return false;
 
