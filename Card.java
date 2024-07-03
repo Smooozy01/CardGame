@@ -302,16 +302,22 @@ class CardDeck {
             return false;
         }
 
-        while (!CheckCardForResponse(PlayerCards.get(cardNum - 1), Desk.lastEntry().getKey()) || cardNum == 0){
+//        while (!CheckCardForResponse(PlayerCards.get(cardNum - 1), Desk.lastEntry().getKey()) || cardNum == 0){
+          while (true){
 
             if (cardNum == 0){
                 TakeGivenCard(PlayerCards, Desk);
                 return false;
             }
-
-            System.out.println("Write a valid card or write 0 if you want to take a card.");
-            cardNum = scanner.nextInt();
-
+            
+            else if ((cardNum >= 1 && cardNum < PlayerCards.size()) && CheckCardForResponse(PlayerCards.get(cardNum - 1), Desk.lastEntry().getKey())) {
+                break;
+            }
+            
+            else {
+                System.out.println("Write a valid card or write 0 if you want to take a card.");
+                cardNum = scanner.nextInt();
+            }
 
         }
 
